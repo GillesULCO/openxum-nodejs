@@ -1,0 +1,42 @@
+extends ../../../../layouts/default
+block head
+    title Games
+block neck
+    link(rel='stylesheet', href='/views/index.min.css?#{cacheBreaker}')
+block body
+    br
+    div.row.vertical-offset-100
+        div.col-md-8.col-md-offset-2
+            div.panel.panel-primary
+                div.panel-heading
+                    h3(class='panel-title') #{__("Rules - Paletto by Dieter Stein")}
+                div.panel-body
+                    h4 #{__("Materiel")}
+                    ul
+                        li #{__("Gameboard with 36 spaces")}
+                        li #{__("36 colored pieces (6 colors, 6 pieces each)")}
+                    div(style="text-align:center")
+                        img(src="/images/paletto/paletto_1.png", width="400px", alt="image générale paletto")
+                    br
+
+                    h4 #{__("Aim")}
+                    | #{__("The game is won by the player who either takes all 6 pieces of any color or whoever takes the last piece from the board.")}
+                    br
+
+                    h4 #{__("How to Play")}
+                    | #{__("Players take turns. In each turn a player chooses a color, then removes any number of same-colored pieces (not necessarily all) from the board and puts them in front of him.")}
+                    br
+                    | #{__("A piece may be removed from the board if")}
+                    br
+                    ul
+                        li #{__("there are no adjacent pieces on two sides (at start only the corner pieces may be taken (Fig 2)")}
+                        li #{__("and all remaining pieces are still connected horizontally and vertically after the move (Fig 3)")}
+                    div(style="text-align:center")
+                        img(src="/images/paletto/paletto_2.png",width="400px", alt="regle 1 paletto")
+                    p(style="width:400px;margin:auto;")
+                        | #{__("(Fig 2) A starting position. The first player may take one or both black pieces, or the yellow one, or the white one. All other pieces have only one free side or they are surrounded completely and therefore unreachable.")}
+                    br
+                    div(style="text-align:center")
+                        img(src="/images/paletto/paletto_3.png",width="400px", alt="regle 2 paletto")
+                    p(style="width:400px;margin:auto;")
+                        | #{__("(Fig 3) All pieces marked green are reachable. The white piece in the middle of the board may not be taken (although it has 2 free sides), because it connects other pieces.")}
