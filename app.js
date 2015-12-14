@@ -12,9 +12,9 @@ var config = require('./config'),
     helmet = require('helmet'),
     webSocketServer = require('./webSocketServer'),
     cluster = require('cluster'),
-    captcha = require('easy-captcha'),
+    captcha = require('node-captcha'),
     i18n = require('i18n-2'),
-    moment= require('moment');
+    moment = require('moment');
 
 //create express app
 var app = express();
@@ -60,17 +60,68 @@ app.use(require('method-override')());
 app.use(require('cookie-parser')());
 app.use(session({
     secret: config.cryptoKey,
-    store: new mongoStore({ url: config.mongodb.uri })
+    store: new mongoStore({url: config.mongodb.uri})
 }));
 app.use(passport.initialize());
 app.use(passport.session());
 helmet.defaults(app);
 
 //captcha
-app.use('/captcha.jpg', captcha.generate());
+app.get('/signup/image/:index', function (req, res) {
+    var visualCaptcha,
+        isRetina = false;
+
+    // Initialize visualCaptcha
+    visualCaptcha = require('visualcaptcha')(req.session, req.query.namespace);
+
+    // Default is non-retina
+    if (req.query.retina) {
+        isRetina = true;
+    }
+    visualCaptcha.streamImage(req.params.index, res, isRetina);
+});
+
+app.get('/signup/audio', function (req, res) {
+    var visualCaptcha;
+
+// Default file type is mp3, but we need to support ogg as well
+    if (req.params.type !== 'ogg') {
+        req.params.type = 'mp3';
+    }
+
+// Initialize visualCaptcha
+    visualCaptcha = require('visualcaptcha')(req.session, req.query.namespace);
+
+    visualCaptcha.streamAudio(res, req.params.type);
+});
+
+app.get('/signup/audio/:type', function (req, res) {
+    var visualCaptcha;
+
+// Default file type is mp3, but we need to support ogg as well
+    if (req.params.type !== 'ogg') {
+        req.params.type = 'mp3';
+    }
+
+// Initialize visualCaptcha
+    visualCaptcha = require('visualcaptcha')(req.session, req.query.namespace);
+
+    visualCaptcha.streamAudio(res, req.params.type);
+});
+
+app.get('/signup/start/:howmany', function (req, res, next) {
+    var visualCaptcha;
+
+    // Initialize visualCaptcha
+    visualCaptcha = require('visualcaptcha')(req.session, req.query.namespace);
+    visualCaptcha.generate(req.params.howmany);
+
+    // We have to send the frontend data to use on POST.
+    res.status(200).send(visualCaptcha.getFrontendData());
+});
 
 //i18n
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     req.i18n.setLocaleFromCookie();
     moment.locale(req.i18n.getLocale());
     next();
@@ -78,8 +129,38 @@ app.use(function(req, res, next) {
 
 //sign up + captcha
 app.get('/signup/', require('./views/signup/index').init);
-app.post('/signup/', captcha.check, require('./views/signup/index').signup);
+app.post('/signup/', function (req, res, next) {
+    var visualCaptcha,
+        namespace = req.query.namespace,
+        queryParams = [],
+        imageAnswer,
+        audioAnswer;
 
+    visualCaptcha = require('visualcaptcha')(req.session, req.query.namespace);
+
+    req.session.captcha = { valid: true };
+    if (namespace && namespace.length !== 0) {
+        queryParams.push('namespace=' + namespace);
+    }
+    if ((imageAnswer = req.body['captcha_image'])) {
+        if (visualCaptcha.validateImage(imageAnswer)) {
+            next();
+        } else {
+            req.session.captcha.valid = false;
+            next();
+        }
+    } else if ((audioAnswer = req.body['captcha_audio'])) {
+        if (visualCaptcha.validateAudio(audioAnswer.toLowerCase())) {
+            next();
+        } else {
+            req.session.captcha.valid = false;
+            next();
+        }
+    } else {
+        req.session.captcha.valid = false;
+        next();
+    }
+}, require('./views/signup/index').signup);
 
 //response locals
 app.use(function (req, res, next) {
@@ -118,13 +199,13 @@ wsServer.server.on('request', function (request) {
 
 //listen up
 /*if (cluster.isMaster) {
-    var cpuCount = require('os').cpus().length;
+ var cpuCount = require('os').cpus().length;
 
-    for (var i = 0; i < cpuCount; i += 1) {
-        cluster.fork();
-    }
-} else { */
-    app.server.listen(app.config.port, function () {
-    });
+ for (var i = 0; i < cpuCount; i += 1) {
+ cluster.fork();
+ }
+ } else { */
+app.server.listen(app.config.port, function () {
+});
 //}
 

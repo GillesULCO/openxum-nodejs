@@ -29,9 +29,9 @@
         "passport-google-oauth": "^0.1.5",
         "passport-tumblr": "^0.1.2",
         "helmet": "^0.2.1",
-        "bcrypt": "^0.7.8",
+        "bcrypt": "^0.8.5",
         "websocket": "^1.0.8",
-        "easy-captcha": "^0.1.5",
+        "visualcaptcha": "^0.1.1",
         "i18n-2": "^0.4.6"
     },
     "devDependencies": {

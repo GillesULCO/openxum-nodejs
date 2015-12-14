@@ -5,9 +5,11 @@ block head
 
 block neck
   link(rel='stylesheet', href='/views/signup/index.min.css?#{cacheBreaker}')
+  link(href="/css/visualcaptcha.css", media="all", rel="stylesheet")
 
 block feet
-  script(src='/views/signup/index.min.js?#{cacheBreaker}')
+  script(src="http://emotionloop.github.io/visualCaptcha-frontend-core/dist/visualcaptcha.jquery.js")
+  script(src='/views/signup/index.js?#{cacheBreaker}')
 
 block body
   div.row
@@ -69,10 +71,8 @@ block body
         input.form-control(type='password', name='password', value!='<%= password %>')
         span.help-block <%- errfor.password %>
       div.form-group(class!='<%- errfor.captcha ? "has-error" : "" %>')
-        img(src='/captcha.jpg')
-        br
-        br
-        input.form-control(type='text', name='captcha', value!='<%= captcha %>')
         span.help-block <%- errfor.captcha %>
+        div#status-message
+        div#sample-captcha
       div.form-group
         button.btn.btn-primary.btn-signup(type='button') Create My Account
